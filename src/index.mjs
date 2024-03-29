@@ -33,7 +33,7 @@ app.get('/api/users/:id', async (req, res) => {
     try {
         const response = await fetch(`${URL}/${userId}`);
         const json = await response.json();
-        const jsonArray = [json]; //แก้เสร็จละอย่างนาน
+        const jsonArray = [json]; //แก้เสร็จใข้ array ครอบอีกที
         const foundUser = jsonArray.find(user => user.id === userId);
         console.log(foundUser)
          if(!foundUser){
