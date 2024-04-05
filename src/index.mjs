@@ -20,7 +20,6 @@ app.get("/api/users", async (req, res) => {
     const {
       query: { filter, value },
     } = req; //ใช้หลักการ destructuring  โดย re-name property ของ query  เป็น filter,value ซึ่งเป็น keyทั้งคู่
-    console.log(req.query);
 
     if (!filter && !value) {
       return res.send(json);
@@ -79,15 +78,15 @@ app.put("/api/users/:id", async (req, res) => {
   } = req;
 
   const userId = parseInt(id);
-  if(isNaN(userId)){
+  if (isNaN(userId)) {
     return res.sendStatus(400);
   }
-  const findUserIndex = json.findIndex((user) => user.id === userId);// userId = 2 findUserIndex = 1 (เพราะ index 1 มี id = 2)
-  if(findUserIndex === -1){
-    return res.sendStatus(404); 
+  const findUserIndex = json.findIndex((user) => user.id === userId); // userId = 2 findUserIndex = 1 (เพราะ index 1 มี id = 2)
+  if (findUserIndex === -1) {
+    return res.sendStatus(404);
   }
-  json[findUserIndex] = { id: userId,...body };
-  console.log(json[findUserIndex] = { id: userId,...body })
+  json[findUserIndex] = { id: userId, ...body };
+  console.log((json[findUserIndex] = { id: userId, ...body }));
   return res.sendStatus(200);
 });
 
@@ -98,16 +97,37 @@ app.patch("/api/users/:id", async (req, res) => {
     body,
     params: { id },
   } = req;
-
   const userId = parseInt(id);
-  if(isNaN(userId)){
+  if (isNaN(userId)) {
     return res.sendStatus(400);
   }
-  const findUserIndex = json.findIndex((user) => user.id === userId);// userId = 2 findUserIndex = 1 (เพราะ index 1 มี id = 2)
-  if(findUserIndex === -1){
+  const findUserIndex = json.findIndex((user) => user.id === userId); // userId = 2 findUserIndex = 1 (เพราะ index 1 มี id = 2)
+  if (findUserIndex === -1) {
     return res.sendStatus(404);
   }
-  json[findUserIndex] = { ...json[findUserIndex],...body }; //{...json[index]}แสดงค่าใน indexที่กำหนด ,...body ส่งค่าที่จะอัพเดทเข้าไปใน index
+  json[findUserIndex] = { ...json[findUserIndex], ...body }; //{...json[index]}แสดงค่าใน indexที่กำหนด ,...body ส่งค่าที่จะอัพเดทเข้าไปใน index
+  return res.sendStatus(200);
+});
+
+app.delete("/api/users/:id", async (req, res) => {
+  const response = await fetch(URL);
+  const json = await response.json();
+  const jsonToArray = [json];
+  const {
+    params: { id },
+  } = req;
+
+  const userId = parseInt(id);
+
+  if (isNaN(userId)) {
+    return res.sendStatus(400);
+  }
+  
+  const findUserIndex = json.findIndex((user) => user.id === userId);
+  if (findUserIndex === -1) {
+    return res.sendStatus(404);
+  }
+  jsonToArray.splice(findUserIndex); //ศึกษาเพิ่มเกี่ยวกับ splice slice
   return res.sendStatus(200);
 });
 
