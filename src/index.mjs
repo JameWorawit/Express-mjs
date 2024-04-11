@@ -1,16 +1,51 @@
 import express, { json, response } from "express";
 import fetch from "node-fetch";
+import cors from "cors";
 const app = express();
 
 app.use(express.json());
+app.use(cors());
+//middleware
+const loggingMiddleware = (req, res, next) => {
+  console.log(`${req.method} - ${req.url}`);
+  next();
+};
+
+const resloveIndexByUserId = async (req, res, next) => {
+  const response = await fetch(URL);
+  const json = await response.json();
+  const {
+    params: { id },
+  } = req;
+
+  const userId = parseInt(id);
+  if (isNaN(userId)) {
+    return res.sendStatus(400);
+  }
+  const findUserIndex = json.findIndex((user) => user.id === userId); // userId = 2 findUserIndex = 1 (เพราะ index 1 มี id = 2)
+  if (findUserIndex === -1) {
+    return res.sendStatus(404);
+  }
+  req.findUserIndex = findUserIndex; //ส่ง obj req ไปยัง app.put
+  req.json = json;
+  next();
+};
 
 const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.status(201).json({ products });
+const URL = `https://jsonplaceholder.typicode.com/users`; //hardcode
+
+app.get("/", async (req, res) => {
+  try {
+    const response = await fetch(URL);
+    const json = await response.json();
+    return res.status(201).json({ json });
+  } catch {
+    console.error(error);
+    res.status(500).send("Error query data");
+  }
 });
 
-const URL = `https://jsonplaceholder.typicode.com/users`;
 //route
 app.get("/api/users", async (req, res) => {
   try {
@@ -40,7 +75,6 @@ app.post("/api/users", async (req, res) => {
     const { body } = req;
     const newUser = { id: json[json.length - 1].id + 1, ...body }; //id:json [เข้าถึง array ข้อมูลตัวสุดท้ายด้วยวิธี -1].id +1เมื่อมีค่าเพิ่มเข้ามา,...body คือเก็บค่าที่เพิ่มเข้ามาเช่น name:'',username:''
     json.push(newUser);
-    console.log(newUser);
     return res.status(201).send(newUser);
   } catch (error) {
     res.status(500).send({ msg: "Not found" });
@@ -55,38 +89,23 @@ app.get("/api/users/:id", async (req, res) => {
   try {
     const response = await fetch(`${URL}/${userId}`);
     const json = await response.json();
-    const jsonToArray = [json]; //แก้เสร็จใข้ array ครอบอีกที
-    const foundUser = jsonToArray.find((user) => user.id === userId);
-    console.log(foundUser);
+    const toArray = [json] //เป็นเพราะ API ฝั่งนู้นนน ทำให้ต้องทำเป็น Array
+    console.log(toArray)
+    const foundUser = toArray.find((user) => user.id === userId);
     if (!foundUser) {
       return res.status(404).send({ msg: "Not Found" });
     } else {
       return res.send(foundUser);
     }
-    res.json(json);
   } catch (error) {
     res.status(500).send("Error fetching data");
   }
 });
 
-app.put("/api/users/:id", async (req, res) => {
-  const response = await fetch(URL);
-  const json = await response.json();
-  const {
-    body,
-    params: { id },
-  } = req;
-
-  const userId = parseInt(id);
-  if (isNaN(userId)) {
-    return res.sendStatus(400);
-  }
-  const findUserIndex = json.findIndex((user) => user.id === userId); // userId = 2 findUserIndex = 1 (เพราะ index 1 มี id = 2)
-  if (findUserIndex === -1) {
-    return res.sendStatus(404);
-  }
-  json[findUserIndex] = { id: userId, ...body };
-  console.log((json[findUserIndex] = { id: userId, ...body }));
+app.put("/api/users/:id", resloveIndexByUserId, async (req, res) => {
+  const { body, findUserIndex, json } = req;
+  json[findUserIndex] = { id: json[findUserIndex].id, ...body }; //แก้โดยการส่งค่า obj ผ่าน req 
+  console.log(json[findUserIndex]);
   return res.sendStatus(200);
 });
 
@@ -122,7 +141,7 @@ app.delete("/api/users/:id", async (req, res) => {
   if (isNaN(userId)) {
     return res.sendStatus(400);
   }
-  
+
   const findUserIndex = json.findIndex((user) => user.id === userId);
   if (findUserIndex === -1) {
     return res.sendStatus(404);
@@ -131,6 +150,7 @@ app.delete("/api/users/:id", async (req, res) => {
   return res.sendStatus(200);
 });
 
+//server
 app.listen(PORT, () => {
   console.log(`localhost:${PORT}`);
 });
