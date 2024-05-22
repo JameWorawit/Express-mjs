@@ -3,6 +3,8 @@ import express, { json, response } from "express";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(express.json());
+
 const mockUsers = [
   { id: 1, username: "Jame", displayName: "jame" },
   { id: 2, username: "Jack", displayName: "jack01" },
@@ -16,11 +18,23 @@ app.get("/", (req, res) => {
 
 //Query Params
 app.get("/api/users", (req, res) => {
-  const { query: {filter, value} } = req;
+  const {
+    query: { filter, value },
+  } = req;
   if (filter && value) {
-    return res.status(201).send(mockUsers.filter((user) => user[filter].includes(value)));
+    return res
+      .status(201)
+      .send(mockUsers.filter((user) => user[filter].includes(value)));
   }
   return res.status(201).send(mockUsers);
+});
+
+//Post Params
+app.post("/api/users", (req, res) => {
+  const { body } = req;
+  const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body}; //อธิบาย วิธ๊นี้เป็นการเพิ่ม User ใหม่โดยการทำ index-1 เพื่อให้ไปอัพเดท id ใหม่โดย id ไม่ซ้ำกัน คือมันไปต่อด้านหลังสุดนั่นแหละ 
+  mockUsers.push(newUser); //ทำเพิ่มผู้ใช้ใหม่
+  return res.status(201).send(newUser);
 });
 
 //Route Params
