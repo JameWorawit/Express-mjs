@@ -1,4 +1,4 @@
-import express, { json, response } from "express";
+import express from "express";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,7 +32,7 @@ app.get("/api/users", (req, res) => {
 //Post Params
 app.post("/api/users", (req, res) => {
   const { body } = req;
-  const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body}; //อธิบาย วิธ๊นี้เป็นการเพิ่ม User ใหม่โดยการทำ index-1 เพื่อให้ไปอัพเดท id ใหม่โดย id ไม่ซ้ำกัน คือมันไปต่อด้านหลังสุดนั่นแหละ 
+  const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body }; //อธิบาย วิธ๊นี้เป็นการเพิ่ม User ใหม่โดยการทำ index-1 เพื่อให้ไปอัพเดท id ใหม่โดย id ไม่ซ้ำกัน คือมันไปต่อด้านหลังสุดนั่นแหละ
   mockUsers.push(newUser); //ทำเพิ่มผู้ใช้ใหม่
   return res.status(201).send(newUser);
 });
@@ -49,6 +49,24 @@ app.get("/api/users/:id", (req, res) => {
     return res.sendStatus(404);
   }
   return res.send(findeUser);
+});
+
+app.put("/api/users/:id", (req, res) => {
+  const {
+    body,
+    params: { id },
+  } = req;
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) {
+    return res.status(400).send({ msg: "Bad Request. Invalid ID." });
+  }
+
+  const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+  if (findUserIndex === -1) {
+    return res.sendStatus(404);
+  }
+  mockUsers[findUserIndex] = { id: parsedId, ...body };
+  return res.sendStatus(200);
 });
 
 //server
