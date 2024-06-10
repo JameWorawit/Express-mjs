@@ -57,19 +57,14 @@ app.post("/api/users", (req, res) => {
 });
 
 //Route Params
-app.get("/api/users/:id", (req, res) => {
-  const parsedId = parseInt(req.params.id);
-  if (isNaN(parsedId)) {
-    return res.status(400).send({ msg: "Bad Request. Invalid ID." });
-  }
-
-  const findeUser = mockUsers.find((user) => user.id === parsedId);
+app.get("/api/users/:id", resolveIndexByUserId, (req, res) => {
+  const {findUserIndex } = req;
+  const findeUser = mockUsers[findUserIndex];
   if (!findeUser) {
     return res.sendStatus(404);
   }
   return res.send(findeUser);
 });
-
 
 //PUT Requests
 app.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
