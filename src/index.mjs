@@ -1,7 +1,15 @@
 import express from "express";
-
+import {
+  query,
+  validationResult,
+  body,
+  matchedData,
+  checkSchema,
+} from "express-validator";
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+import { createUserValidationSchema } from './utils/validationSchemas.mjs';
 
 //Middleware
 const resolveIndexByUserId = (req, res, next) => {
@@ -36,29 +44,46 @@ app.get("/", (req, res) => {
 });
 
 //Query Params
-app.get("/api/users", (req, res) => {
-  const {
-    query: { filter, value },
-  } = req;
-  if (filter && value) {
-    return res
-      .status(201)
-      .send(mockUsers.filter((user) => user[filter].includes(value)));
+app.get(
+  "/api/users",
+  query("filter")
+    .isString()
+    .notEmpty()
+    .withMessage("Must not be empty")
+    .isLength({ min: 3, max: 10 })
+    .withMessage("Must be at least 3-10 charaters"),
+  (req, res) => {
+    const result = validationResult(req);
+    console.log(result);
+    const {
+      query: { filter, value },
+    } = req;
+    if (filter && value) {
+      return res
+        .status(201)
+        .send(mockUsers.filter((user) => user[filter].includes(value)));
+    }
+    return res.status(201).send(mockUsers);
   }
-  return res.status(201).send(mockUsers);
-});
+);
 
 //Post Params
-app.post("/api/users", (req, res) => {
-  const { body } = req;
-  const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body }; //อธิบาย วิธ๊นี้เป็นการเพิ่ม User ใหม่โดยการทำ index-1 เพื่อให้ไปอัพเดท id ใหม่โดย id ไม่ซ้ำกัน คือมันไปต่อด้านหลังสุดนั่นแหละ
+app.post("/api/users", checkSchema(createUserValidationSchema), (req, res) => {
+  const result = validationResult(req);
+  console.log(result);
+
+  if (!result.isEmpty()) {
+    return res.status(400).send({ errors: result.array() });
+  }
+  const data = matchedData(req);
+  const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...data }; //อธิบาย วิธ๊นี้เป็นการเพิ่ม User ใหม่โดยการทำ index-1 เพื่อให้ไปอัพเดท id ใหม่โดย id ไม่ซ้ำกัน คือมันไปต่อด้านหลังสุดนั่นแหละ
   mockUsers.push(newUser); //ทำเพิ่มผู้ใช้ใหม่
   return res.status(201).send(newUser);
 });
 
 //Route Params
 app.get("/api/users/:id", resolveIndexByUserId, (req, res) => {
-  const {findUserIndex } = req;
+  const { findUserIndex } = req;
   const findeUser = mockUsers[findUserIndex];
   if (!findeUser) {
     return res.sendStatus(404);
