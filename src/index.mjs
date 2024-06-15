@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
   res.status(201).send((mockUsers[0] = { ...body }));
 });
 
-//server
+//server not dotevn 
 app.listen(PORT, () => {
   console.log(`localhost:${PORT}`);
 });
