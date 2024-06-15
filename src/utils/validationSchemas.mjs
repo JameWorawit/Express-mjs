@@ -1,3 +1,5 @@
+import { body } from "express-validator";
+
 export const createUserValidationSchema = {
   username: {
     isLength: {
