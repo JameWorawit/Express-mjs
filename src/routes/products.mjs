@@ -13,4 +13,11 @@ router.get("/api/products", (req, res) => {
   }
 });
 
+router.get("/api/checkusername", (req, res) => {
+  if (req.cookies.username && req.cookies.username === "john@gmail.com") {
+    return res.status(200).send([{ id: 1, user: req.cookies.username }]);
+  } else {
+    return res.status(403).send({ msg: "Sorry. You need the correct cookie" });
+  }
+});
 export default router;
