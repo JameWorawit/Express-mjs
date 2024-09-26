@@ -29,7 +29,7 @@ app.listen(PORT, () => {
 //Set Cookies
 app.get("/", (req, res) => {
   res.cookie("hello", "world", { maxAge: 20000, signed: true });
-  res.cookie("username", "john@gmail.com", { maxAge: 20000 });
+  res.cookie("username", "john@gmail.com", { maxAge: 20000});
 
   console.log(req.session.id);
   req.session.visited = true; //แก้การส่ง session id ซ้ำ
@@ -37,9 +37,8 @@ app.get("/", (req, res) => {
 });
 
 app.post("/api/auth", (req, res) => {
-  const {
-    body: { username, password },
-  } = req;
+  const { body: { username, password }, } = req;
+
   const findUser = mockUsers.find((user) => user.username === username);
   if (!findUser || findUser.password !== password) {
     return res.status(401).send({ msg: "BAD CREDENTIALS" });
@@ -50,7 +49,7 @@ app.post("/api/auth", (req, res) => {
 
 app.get("/api/auth/status", (req, res) => {
   req.sessionStore.get(req.sessionID, (err, session) => {
-    console.log(session);
+    console.log(req.sessionID);
   });
   return req.session.user
     ? res.status(200).send(req.session.user)
@@ -63,7 +62,7 @@ app.post("/api/cart", (req, res) => {
   }
   const { body: item } = req;
   const { cart } = req.session;
-
+  console.log(req.session);
   if (cart) {
     cart.push(item);
   } else {

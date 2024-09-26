@@ -8,7 +8,6 @@ import {
 import { mockUsers } from "../utils/constants.mjs";
 import { createUserValidationSchema } from "../utils/validationSchemas.mjs";
 import { resolveIndexByUserId } from "../middleware/middlewares.mjs";
-import session from "express-session";
 
 const router = Router();
 
