@@ -3,6 +3,9 @@ import routes from "./routes/index.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import { mockUsers } from "./utils/constants.mjs";
+import passport from "passport";
+import "./strategies/local-strategy.mjs";
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,7 +22,34 @@ app.use(
     },
   })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(routes);
+
+//Passport
+app.post('/api/auth', passport.authenticate("local"), (req, res) => {
+  res.sendStatus(200)
+});
+app.get('/api/auth/status', (req, res) => {
+  console.log(`Inseid /auth/status endpoint`);
+  console.log(req.user);
+  console.log(req.session);
+  return req.user ? res.send(req.user) : res.sendStatus(401);
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  if (!req.user) {
+    return res.sendStatus(401);
+  }
+  req.logout((err) => {
+    if (err) {
+      return res.sendStatus(400);
+    }
+    res.send(200);
+  });
+});
 
 //server please use .env !!
 app.listen(PORT, () => {
@@ -29,7 +59,7 @@ app.listen(PORT, () => {
 //Set Cookies
 app.get("/", (req, res) => {
   res.cookie("hello", "world", { maxAge: 20000, signed: true });
-  res.cookie("username", "john@gmail.com", { maxAge: 20000});
+  res.cookie("username", "john@gmail.com", { maxAge: 20000 });
 
   console.log(req.session.id);
   req.session.visited = true; //แก้การส่ง session id ซ้ำ
