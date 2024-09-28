@@ -89,8 +89,8 @@ router.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
 router.patch("/api/users/:id", resolveIndexByUserId, (req, res) => {
   const { body, findUserIndex } = req;
 
-  //...mockUsers[findUserIndex] เป็นการกระจายข้อมูลเดิม
-  mockUsers[findUserIndex] = { ...mockUsers[findUserIndex], ...body };
+  //...mockUsers[findUserIndex] เป็นการกระจายข้อมูลเดิม , ...body คือข้อมูลใหม่ที่กรอกลงไป
+  mockUsers[findUserIndex] = { ...mockUsers[findUserIndex], ...body }; 
   return res.sendStatus(200);
 });
 

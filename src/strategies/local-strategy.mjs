@@ -24,8 +24,8 @@ passport.deserializeUser((id, done) => {
 
 export default passport.use(
     new Strategy((username, password, done) => {
-        console.log(`Username : ${username}`);
-        console.log(`Password : ${password}`);
+        // console.log(`Username : ${username}`);
+        // console.log(`Password : ${password}`);
         try {
             const findUser = mockUsers.find((user) => user.username === username);
             if (!findUser) {

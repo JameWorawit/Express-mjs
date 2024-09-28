@@ -28,10 +28,11 @@ app.use(passport.session());
 
 app.use(routes);
 
-//Passport
+//** Passport **
 app.post('/api/auth', passport.authenticate("local"), (req, res) => {
   res.sendStatus(200)
 });
+
 app.get('/api/auth/status', (req, res) => {
   console.log(`Inseid /auth/status endpoint`);
   console.log(req.user);
@@ -66,26 +67,29 @@ app.get("/", (req, res) => {
   res.status(201).send({ msg: "hello" });
 });
 
-app.post("/api/auth", (req, res) => {
-  const { body: { username, password }, } = req;
+// ** Old auth **
+// app.post("/api/auth", (req, res) => {
+//   const { body: { username, password }, } = req;
 
-  const findUser = mockUsers.find((user) => user.username === username);
-  if (!findUser || findUser.password !== password) {
-    return res.status(401).send({ msg: "BAD CREDENTIALS" });
-  }
-  req.session.user = findUser;
-  return res.status(200).send(findUser);
-});
+//   const findUser = mockUsers.find((user) => user.username === username);
+//   if (!findUser || findUser.password !== password) {
+//     return res.status(401).send({ msg: "BAD CREDENTIALS" });
+//   }
+//   req.session.user = findUser;
+//   return res.status(200).send(findUser);
+// });
 
-app.get("/api/auth/status", (req, res) => {
-  req.sessionStore.get(req.sessionID, (err, session) => {
-    console.log(req.sessionID);
-  });
-  return req.session.user
-    ? res.status(200).send(req.session.user)
-    : res.status(400).send({ msg: "No Authenticated" });
-});
+// app.get("/api/auth/status", (req, res) => {
+//   req.sessionStore.get(req.sessionID, (err, session) => {
+//     console.log(req.sessionID);
+//   });
+//   return req.session.user
+//     ? res.status(200).send(req.session.user)
+//     : res.status(400).send({ msg: "No Authenticated" });
+// });
 
+
+//  CART
 app.post("/api/cart", (req, res) => {
   if (!req.session.user) {
     return res.sendStatus(401);
