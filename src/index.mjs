@@ -4,11 +4,15 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import { mockUsers } from "./utils/constants.mjs";
 import passport from "passport";
+import mongoose from "mongoose";
 import "./strategies/local-strategy.mjs";
 
-
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 8000;
+
+mongoose.connect('mongodb://127.0.0.1:27017/express-es6')
+  .then(() => console.log('Connected to Database'))
+  .catch((err) => console.log(`Error: ${err}`))
 
 app.use(express.json());
 app.use(cookieParser("helloworld"));
