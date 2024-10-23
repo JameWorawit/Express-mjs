@@ -9,6 +9,7 @@ import { mockUsers } from "../utils/constants.mjs";
 import { createUserValidationSchema } from "../utils/validationSchemas.mjs";
 import { resolveIndexByUserId } from "../middleware/middlewares.mjs";
 import { User } from "../mongoeDB/schema/user.mjs";
+import { hashPassword } from "../utils/helpers.mjs";
 
 const router = Router();
 
@@ -48,21 +49,27 @@ router.get("/api/users/:id", resolveIndexByUserId, (req, res) => {
 });
 
 //Post Params
-router.post("/api/users", checkSchema(createUserValidationSchema), async (req, res) => {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.sendStatus(400).send(result.array());
-  }
-  const data = matchedData(req)
-  const newUser = new User(data);
-  try {
-    const saveUser = await newUser.save();
-    return res.status(201).send(saveUser);
-  } catch (err) {
-    console.log(err)
-    return res.sendStatus(400)
-  }
-});
+router.post("/api/users",
+  checkSchema(createUserValidationSchema),
+  async (req, res) => {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array());
+    }
+
+    const data = matchedData(req)
+    console.log(data)
+    data.password = hashPassword(data.password)
+    console.log(data)
+    const newUser = new User(data);
+    try {
+      const saveUser = await newUser.save();
+      return res.status(201).send(saveUser);
+    } catch (err) {
+      console.log(err)
+      return res.sendStatus(400)
+    }
+  });
 
 //PUT Requests
 router.put("/api/users/:id", resolveIndexByUserId, (req, res) => {
