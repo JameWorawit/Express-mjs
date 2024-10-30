@@ -6,6 +6,7 @@ import { mockUsers } from "./utils/constants.mjs";
 import passport from "passport";
 import mongoose from "mongoose";
 import "./strategies/local-strategy.mjs";
+import MongoStore from "connect-mongo";
 
 const app = express();
 const PORT = 8000;
@@ -22,8 +23,12 @@ app.use(
     saveUninitialized: false,
     resave: false,
     cookie: {
-      maxAge: 60000 * 60,
+      maxAge: 6000 * 60,
     },
+    store: MongoStore.create({
+      client: mongoose.connection.getClient()
+
+    })
   })
 );
 
@@ -52,24 +57,10 @@ app.post('/api/auth/logout', (req, res) => {
     if (err) {
       return res.sendStatus(400);
     }
-    res.send(200);
+    res.sendStatus(200);
   });
 });
 
-//server please use .env !!
-app.listen(PORT, () => {
-  console.log(`localhost:${PORT}`);
-});
-
-//Set Cookies
-app.get("/", (req, res) => {
-  res.cookie("hello", "world", { maxAge: 20000, signed: true });
-  res.cookie("username", "john@gmail.com", { maxAge: 20000 });
-
-  console.log(req.session.id);
-  req.session.visited = true; //แก้การส่ง session id ซ้ำ
-  res.status(201).send({ msg: "hello" });
-});
 
 // ** Old auth **
 // app.post("/api/auth", (req, res) => {
@@ -94,24 +85,40 @@ app.get("/", (req, res) => {
 
 
 //  CART
-app.post("/api/cart", (req, res) => {
-  if (!req.session.user) {
+app.post("/api/cart", passport.authenticate("local") ,(req, res) => {
+
+  if (!req.user.id) {
     return res.sendStatus(401);
   }
-  const { body: item } = req;
-  const { cart } = req.session;
-  console.log(req.session);
-  if (cart) {
-    cart.push(item);
-  } else {
-    req.session.cart = [item];
+  const item = req.body;
+  if (!req.session.cart) {
+    req.session.cart = [];
   }
+  req.session.cart.push(item)
   return res.status(201).send(item);
 });
 
-app.get("/api/cart", (req, res) => {
-  if (!req.session.user) {
+app.get("/api/cart", passport.authenticate("local"), (req, res) => {
+  console.log("user.id")
+  if (!req.id) {
     return res.sendStatus(401);
   }
   return res.send(req.session.cart ?? []);
 });
+
+//server please use .env !!
+app.listen(PORT, () => {
+  console.log(`localhost:${PORT}`);
+});
+
+//Set Cookies
+app.get("/", (req, res) => {
+  res.cookie("hello", "world", { maxAge: 20000, signed: true });
+  res.cookie("username", "john@gmail.com", { maxAge: 20000 });
+
+  console.log(req.session.id);
+  req.session.visited = true; //แก้การส่ง session id ซ้ำ
+  res.status(201).send({ msg: "hello" });
+});
+
+

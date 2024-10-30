@@ -56,7 +56,6 @@ router.post("/api/users",
     if (!result.isEmpty()) {
       return res.status(400).send(result.array());
     }
-
     const data = matchedData(req)
     console.log(data)
     data.password = hashPassword(data.password)
